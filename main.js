@@ -34,17 +34,20 @@ class LazyLoadImage {
 
             if(isImage) {
                 srcLink = item.src;
+                item.src = null;
             }else {
                 let style = window.getComputedStyle(item, null);
                 let srcRegex = style.getPropertyValue('background-image').match(/url\(['"](.*?)['"]\)/);
                 if(srcRegex) {
                     srcLink = srcRegex[1];
                 }
+                item.style.backgroundImage = null;
             }
 
             let imgObj = {
                 dom: item,
-                src: srcLink
+                src: srcLink,
+                isImage
             }
 
             //元素顶部距离不能改变
@@ -79,9 +82,15 @@ class LazyLoadImage {
         }
 
         let image = new Image();
-        image.src = this.domList[this.imageCount].src;
+        let domObj = this.domList[this.imageCount];
+        image.src = domObj.src;
         image.onload = () => {
-            console.log(this.imageCount + '张');
+            console.log(this.domList[this.imageCount]['dom']);
+            if(domObj['isImage']) {
+                domObj['dom'].src = domObj['src'];
+            }else {
+                domObj['dom'].style.backgroundImage = 'url(' + domObj['src'] + ')';
+            }
             this.imageCount++;
             this._preloadImage();
         }
